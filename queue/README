@@ -1,0 +1,69 @@
+This is the C queue coding problem for Applicant:
+Jonathan Hall
+jshall@bu.edu
+Boston University
+
+------------------------------------------------------------------------------------Queue Implementation-------------------------------------------------------------------------------------
+	Included files:
+
+--queue.c
+--queue.h
+--queue_input_test.c
+--queue_test_battery.c
+--makefile
+--README
+
+	Usage:
+
+The library is written to comply with C99 version of C, as given in the MISRA coding standard. I provided a makefile that builds the library along with two test files, queue_test_battery.c and queue_input_test.c . queue_test_battery is an automated test that stresses different aspects of library. queue_input_test is a user fed test, that also allows the user to try out features of the queue implementation. 
+
+If you would like to create your own source file I'll briefly outline some features.
+
+queue varName;  		//creation of queue variable
+char* str = "I'm first!";
+enqueue(&varName, str); 	//to enqueue str
+print_len(&varName);		//print length of queue
+dequeue(&varName, NULL);	//dequeue and print removed element
+
+
+	Building:
+
+In order to build the queue library with your own test files, please build queue.h as an object file:
+
+gcc -std=c99 -c queue.c
+
+Please feel free to include other flags as you see fit (-Wall, -Werror, -g, ...). Then link queue.o to your source file:
+
+gcc -std=c99 -o out [c_file] queue.o 
+
+
+
+	Design Decisions: 
+
+Since I'm making a simple queue, I decided to think through certain design aspects in more depth. Namely:
+
+Queue Data Type Choice:
+1. array
+2. circular buffer
+3. linked list
+
+Since most of our operations occur at the front or end of the queue, I decided that linked lists are best. While their seek time has a linear time complexity (on the order of O(n)), we won't typically
+be accessing elements besides at the start or the end of the queue. The big advantage is the ability to shrink and grow with constant time. A second feasible choice would be the use of a circular buffer, however this would reduce overhead but situations where our linked list is full are slow to resolve.
+
+Thus, I decided to use a linked list implementation of a queue. There's now a choice for doubly linked or single linked, but the requirements are fulfilled by singly linked, and there is no need to overcomplicate our functions.
+
+In order avoid the seek time for linked list, I created a tail node in addition to the usual head node. The tail node stays at the end of the queue and and allows us to push new elements without having to traverse the list. 
+
+Besides the required functionality, I decided a few other useful functions:
+1. q_peek - Print the value at the front of the queue.
+2. q_init - Function that initialized our queue so the user doesn't have to.
+3. q_destroy - frees allocated memory associated with the queue.
+
+I believe the peek and destroy functions are self explanatory, but I would like to talk a bit deeper about my initialization method. When creating a library, I want to make it as user friendly as possible. This is why I decided on having implicit initialization of the queue type. I do this by utilizing the fact that integers are undefined on declaration. When any queue function is called, it first checks to see if a queue integer value is known. If it isn't, we know that the queue isn't initialized and we proceed to do so (and make the integer value known). Besides allowing implicit initialization, this also checks to make sure that the user is using the library correctly. Using this initialization method we run the risk of having the integer value coincidentally be the known value. In this case we would have a segmentation fault when an operation is attempted on the uninitialized queue, but the likelihood is very small (< 1 in 10 billion), and generally worth the risk (though, this decision may change given a specific use case). 
+
+queue data type:
+
+For the data type used to store values in the queue, I decided on char*. The benefit we get is efficient space utilization of our queues, as well as unbound queue element length. There are several drawbacks but they're situational to specific usage.
+
+
+ 
